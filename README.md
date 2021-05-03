@@ -9,4 +9,4 @@ https://t9guan.github.io/Lab5-2/
 
 ## Part 2:
 
-LINK TO YOUR PART 2 REPOSITORY
+https://github.com/t9guan/github-actions-for-ci
