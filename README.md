@@ -5,7 +5,7 @@
 
 ## Part 1:
 
-LINK TO YOUR PUBLISHED SITE
+https://t9guan.github.io/Lab5-2/
 
 ## Part 2:
 
