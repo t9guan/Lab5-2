@@ -1,6 +1,11 @@
 // script.js
 
 const img = new Image(); // used to load image from <input> and draw to canvas
+const generate = document.querySelector('button[type=submit]');
+const reset = document.querySelector('button[type=reset]');
+const button = document.querySelector('button[type=button]');
+const canvas = document.getElementById("user-image");
+const context = canvas.getContext('2d');
 
 // Fires whenever the img object loads a new image (such as with img.src =)
 img.addEventListener('load', () => {
@@ -10,6 +15,119 @@ img.addEventListener('load', () => {
   // - Fill the whole Canvas with black first to add borders on non-square images, then draw on top
   // - Clear the form when a new image is selected
   // - If you draw the image to canvas here, it will update as soon as a new image is selected
+
+  context.clearRect(0,0,canvas.width,canvas.height);
+
+  generate.disabled = false;
+  reset.disabled = true;
+  button.disabled = true;
+
+  context.fillStyle = 'black';
+  context.fillRect(0,0,canvas.width,canvas.height);
+
+  let dimensions = getDimmensions(canvas.width, canvas.height, img.width, img.height);
+
+  context.drawImage(img, dimensions['startX'], dimensions['startY'], dimensions['width'], dimensions['height']);
+
+});
+
+const fileUpload = document.getElementById('image-input');
+fileUpload.addEventListener('change', (e) => {
+  img.src = URL.createObjectURL(e.target.files[0]);
+});
+
+generate.addEventListener('click', ()=>{
+  generate.disabled = true;
+  reset.disabled = false;
+  button.disabled = false;
+
+  let topText = document.getElementById('text-top');
+  let bottomText = document.getElementById('text-bottom');
+
+  context.textAlign = 'center';
+  context.fillStyle = 'white';
+  context.font = '30px Arial';
+  context.fillText(topText.value, canvas.width/2, 30);
+  context.fillText(bottomText.value, canvas.width/2, canvas.height-10)
+});
+
+reset.addEventListener('click', ()=>{
+  generate.disabled = false;
+  reset.disabled = true;
+  button.disabled = true;
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+});
+
+
+
+function populateVoiceList() {
+  if(typeof speechSynthesis === 'undefined') {
+    return;
+  }
+
+  let selectVoices = document.getElementById('voice-selection');
+  let voices = speechSynthesis.getVoices();
+
+  selectVoices.innerHTML = '';
+  selectVoices.disabled = false;
+
+  for (let i = 0; i < voices.length; i++){
+    let option = document.createElement('option');
+    option.textContent = voices[i].name + ' (' + voices[i].lang + ')';
+
+    if(voices[i].default) {
+      option.textContent += ' -- DEFAULT';
+    }
+
+    option.setAttribute('data-lang', voices[i].lang);
+    option.setAttribute('data-name', voices[i].name);
+    selectVoices.appendChild(option);
+  }
+}
+
+populateVoiceList();
+if (typeof speechSynthesis !== 'undefined' && speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = populateVoiceList;
+}
+
+button.addEventListener('click', () => {
+  let selectVoices = document.getElementById('voice-selection');
+  let voices = speechSynthesis.getVoices();
+
+  let topText = document.getElementById('text-top').value;
+  let bottomText = document.getElementById('text-bottom').value;
+
+  var utterThis = new SpeechSynthesisUtterance(topText + ' ' + bottomText);
+  let selectedOption = selectVoices.value;
+
+  for(let i = 0; i < voices.length ; i++) {
+    let temp = voices[i].name + ' (' + voices[i].lang + ')';
+    if(voices[i].default){
+      temp += ' -- DEFAULT';
+    }
+    if(temp === selectedOption) {
+      utterThis.voice = voices[i];
+    }
+  }
+
+  utterThis.volume = slider.value/100;
+  speechSynthesis.speak(utterThis);
+});
+
+const slider = document.querySelector('input[type=range]');
+slider.addEventListener('change', () => {
+  console.log(slider.value);
+  if(slider.value >= 67){
+    document.getElementsByTagName('img')[0].src = './icons/volume-level-3.svg';
+  }else if(slider.value < 67 && slider.value >= 34){
+    document.getElementsByTagName('img')[0].src = './icons/volume-level-2.svg';
+  }else if(slider.value < 34 && slider.value >= 1){
+    document.getElementsByTagName('img')[0].src = './icons/volume-level-1.svg';
+  }else{
+    document.getElementsByTagName('img')[0].src = './icons/volume-level-0.svg';
+  }
+
 });
 
 /**
@@ -51,3 +169,4 @@ function getDimmensions(canvasWidth, canvasHeight, imageWidth, imageHeight) {
 
   return { 'width': width, 'height': height, 'startX': startX, 'startY': startY }
 }
+
